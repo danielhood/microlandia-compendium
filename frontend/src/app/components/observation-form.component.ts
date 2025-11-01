@@ -1,7 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ObservationService } from '../services/observation.service';
 
 @Component({
@@ -9,7 +9,7 @@ import { ObservationService } from '../services/observation.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <h2>Add Observation</h2>
+    <h2>{{ isEdit ? 'Edit Observation' : 'Add Observation' }}</h2>
     <form (ngSubmit)="submit()" class="form-grid">
       <label>
         Researcher Name
@@ -38,10 +38,13 @@ import { ObservationService } from '../services/observation.service';
     </form>
   `
 })
-export class ObservationFormComponent {
+export class ObservationFormComponent implements OnInit {
   private svc = inject(ObservationService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
+  isEdit = false;
+  id: string | null = null;
   model: any = {
     researcherName: '',
     commonName: '',
@@ -50,8 +53,26 @@ export class ObservationFormComponent {
     fieldNotes: ''
   };
 
+  ngOnInit(): void {
+    this.id = this.route.snapshot.paramMap.get('id');
+    this.isEdit = !!this.id;
+    if (this.isEdit && this.id) {
+      this.svc.get(this.id).subscribe(data => this.model = {
+        researcherName: data.researcherName,
+        commonName: data.commonName,
+        scientificName: data.scientificName,
+        habitat: data.habitat,
+        fieldNotes: data.fieldNotes ?? ''
+      });
+    }
+  }
+
   submit() {
-    this.svc.create(this.model).subscribe(() => this.router.navigateByUrl('/'));
+    if (this.isEdit && this.id) {
+      this.svc.update(this.id, this.model).subscribe(() => this.router.navigateByUrl('/'));
+    } else {
+      this.svc.create(this.model).subscribe(() => this.router.navigateByUrl('/'));
+    }
   }
 
   cancel() { this.router.navigateByUrl('/'); }

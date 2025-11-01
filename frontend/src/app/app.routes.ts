@@ -5,6 +5,6 @@ import { ObservationFormComponent } from './components/observation-form.componen
 export const routes: Routes = [
   { path: '', component: ObservationListComponent },
   { path: 'new', component: ObservationFormComponent },
+  { path: 'edit/:id', component: ObservationFormComponent },
   { path: '**', redirectTo: '' }
 ];
-
