@@ -1,0 +1,47 @@
+# General
+node_modules/
+dist/
+coverage/
+tmp/
+temp/
+
+# Environment files
+.env
+.env.*
+!*.example
+api/.env
+api/.env.*
+frontend/.env
+frontend/.env.*
+
+# Logs and debug
+logs/
+*.log
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.pid
+*.pid.lock
+
+# Angular
+frontend/.angular/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.history/
+
+# OS files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Docker (local overrides)
+docker-compose.override.yml
+

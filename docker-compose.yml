@@ -1,0 +1,23 @@
+version: '3.9'
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+  api:
+    build: ./api
+    depends_on:
+      - mongo
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/microlandia
+      - PORT=8080
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
+
