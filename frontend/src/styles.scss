@@ -217,7 +217,7 @@ details.search-panel .search-form { margin-top: 0.75rem; }
 }
 .search-form .actions {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr;
   gap: 0.5rem;
 }
 .search-form .actions a { display: block; }

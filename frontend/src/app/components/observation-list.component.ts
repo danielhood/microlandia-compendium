@@ -17,17 +17,16 @@ import { Observation } from '../models/observation';
 
       <details class="search-panel">
         <summary>Search</summary>
-        <form (ngSubmit)="search()" class="search-form">
-          <select [(ngModel)]="filters.researcherName" name="researcherName">
+        <form class="search-form">
+          <select [(ngModel)]="filters.researcherName" name="researcherName" (ngModelChange)="onFilterChange()">
             <option value="">All Researchers</option>
             <option *ngFor="let r of researchers" [value]="r">{{ r }}</option>
           </select>
-          <input [(ngModel)]="filters.commonName" name="commonName" placeholder="Common Name" />
-          <input [(ngModel)]="filters.scientificName" name="scientificName" placeholder="Scientific Name" />
-          <input [(ngModel)]="filters.habitat" name="habitat" placeholder="Habitat" />
-          <input [(ngModel)]="filters.q" name="q" placeholder="Search notes" />
+          <input [(ngModel)]="filters.commonName" name="commonName" placeholder="Common Name" (ngModelChange)="onFilterChange()" />
+          <input [(ngModel)]="filters.scientificName" name="scientificName" placeholder="Scientific Name" (ngModelChange)="onFilterChange()" />
+          <input [(ngModel)]="filters.habitat" name="habitat" placeholder="Habitat" (ngModelChange)="onFilterChange()" />
+          <input [(ngModel)]="filters.q" name="q" placeholder="Search notes" (ngModelChange)="onFilterChange()" />
           <div class="actions">
-            <button type="submit">Search</button>
             <button type="button" (click)="reset()">Reset</button>
           </div>
         </form>
@@ -64,6 +63,7 @@ export class ObservationListComponent implements OnInit {
   filters: any = { researcherName: '', commonName: '', scientificName: '', habitat: '', q: '' };
   toast: string = '';
   researchers: string[] = [];
+  private filterDebounce: any;
 
   ngOnInit(): void {
     try {
@@ -85,6 +85,11 @@ export class ObservationListComponent implements OnInit {
   }
 
   search() { this.load(); }
+
+  onFilterChange() {
+    clearTimeout(this.filterDebounce);
+    this.filterDebounce = setTimeout(() => this.load(), 250);
+  }
 
   reset() {
     this.filters = { researcherName: '', commonName: '', scientificName: '', habitat: '', q: '' };
