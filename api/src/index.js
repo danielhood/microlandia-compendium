@@ -61,7 +61,7 @@ app.get('/api/observations', async (req, res) => {
 app.post('/api/observations', async (req, res) => {
   try {
     const body = req.body || {};
-    const required = ['researcherName', 'commonName', 'scientificName', 'habitat'];
+    const required = ['commonName', 'researcherName'];
     for (const k of required) {
       if (!body[k] || String(body[k]).trim() === '') return res.status(400).json({ error: `${k} is required` });
     }

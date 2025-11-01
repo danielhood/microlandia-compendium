@@ -12,6 +12,7 @@ import { Observation } from '../models/observation';
   imports: [CommonModule, FormsModule, RouterLink],
   template: `
     <section>
+      <div class="toast" *ngIf="toast">{{ toast }}</div>
       <h2>Observations</h2>
 
       <details class="search-panel">
@@ -58,8 +59,17 @@ export class ObservationListComponent implements OnInit {
   private router = inject(Router);
   observations: Observation[] = [];
   filters: any = { researcherName: '', commonName: '', scientificName: '', habitat: '', q: '' };
+  toast: string = '';
 
   ngOnInit(): void {
+    try {
+      const t = sessionStorage.getItem('ml_toast');
+      if (t) {
+        this.toast = t;
+        sessionStorage.removeItem('ml_toast');
+        setTimeout(() => this.toast = '', 3000);
+      }
+    } catch {}
     this.load();
   }
 

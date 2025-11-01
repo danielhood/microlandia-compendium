@@ -11,21 +11,32 @@ import { ObservationService } from '../services/observation.service';
   template: `
     <h2>{{ isEdit ? 'Edit Observation' : 'Add Observation' }}</h2>
     <form (ngSubmit)="submit()" class="form-grid">
+      <div class="actions">
+        <button type="submit">Save</button>
+        <button type="button" (click)="cancel()">Cancel</button>
+      </div>
+      <div class="form-error" *ngIf="submitted && !isValid()">
+        Please fill the required fields: Researcher Name and Common Name.
+      </div>
       <label>
-        Researcher Name
-        <input [(ngModel)]="model.researcherName" name="researcherName" required />
+        Researcher Name <span class="req">*</span>
+        <input [(ngModel)]="model.researcherName" name="researcherName" required
+               [class.invalid]="submitted && !(model.researcherName && model.researcherName.trim())" />
+        <small class="error-text" *ngIf="submitted && !(model.researcherName && model.researcherName.trim())">Researcher Name is required.</small>
       </label>
       <label>
-        Common Name
-        <input [(ngModel)]="model.commonName" name="commonName" required />
+        Common Name <span class="req">*</span>
+        <input [(ngModel)]="model.commonName" name="commonName" required
+               [class.invalid]="submitted && !(model.commonName && model.commonName.trim())" />
+        <small class="error-text" *ngIf="submitted && !(model.commonName && model.commonName.trim())">Common Name is required.</small>
       </label>
       <label>
         Scientific Name
-        <input [(ngModel)]="model.scientificName" name="scientificName" required />
+        <input [(ngModel)]="model.scientificName" name="scientificName" />
       </label>
       <label>
         Habitat
-        <input [(ngModel)]="model.habitat" name="habitat" required />
+        <input [(ngModel)]="model.habitat" name="habitat" />
       </label>
       <label>
         Field Notes
@@ -47,10 +58,6 @@ import { ObservationService } from '../services/observation.service';
           ></canvas>
         </div>
         <small style="color: var(--muted)">Draw with finger or mouse. Edits layer on top of existing image.</small>
-      </div>
-      <div class="actions">
-        <button type="submit">Save</button>
-        <button type="button" (click)="cancel()">Cancel</button>
       </div>
     </form>
   `
@@ -78,6 +85,7 @@ export class ObservationFormComponent implements OnInit, AfterViewInit {
   private lastY = 0;
   private strokeStyle = '#ffffff';
   private lineWidth = 3;
+  submitted = false;
 
   ngOnInit(): void {
     this.id = this.route.snapshot.paramMap.get('id');
@@ -85,16 +93,23 @@ export class ObservationFormComponent implements OnInit, AfterViewInit {
     if (this.isEdit && this.id) {
       this.svc.get(this.id).subscribe(data => {
         this.model = {
-          researcherName: data.researcherName,
-          commonName: data.commonName,
-          scientificName: data.scientificName,
-          habitat: data.habitat,
+          researcherName: data.researcherName ?? '',
+          commonName: data.commonName ?? '',
+          scientificName: data.scientificName ?? '',
+          habitat: data.habitat ?? '',
           fieldNotes: data.fieldNotes ?? '',
           imageData: data.imageData ?? ''
         };
         // Ensure canvas reflects existing image when editing
         setTimeout(() => this.initCanvas(), 0);
       });
+    }
+    // Default Researcher Name from session for Add flow
+    if (!this.isEdit) {
+      try {
+        const last = sessionStorage.getItem('ml_lastResearcherName');
+        if (last && !this.model.researcherName) this.model.researcherName = last;
+      } catch {}
     }
   }
 
@@ -174,12 +189,30 @@ export class ObservationFormComponent implements OnInit, AfterViewInit {
   submit() {
     // Ensure latest sketch is saved
     this.snapToModel();
+    this.submitted = true;
+    if (!this.isValid()) {
+      return; // show validation messages
+    }
+    // Persist researcher name for session defaults
+    try { sessionStorage.setItem('ml_lastResearcherName', this.model.researcherName ?? ''); } catch {}
     if (this.isEdit && this.id) {
-      this.svc.update(this.id, this.model).subscribe(() => this.router.navigateByUrl('/'));
+      this.svc.update(this.id, this.model).subscribe(() => {
+        try { sessionStorage.setItem('ml_toast', 'Observation saved'); } catch {}
+        this.router.navigateByUrl('/');
+      });
     } else {
-      this.svc.create(this.model).subscribe(() => this.router.navigateByUrl('/'));
+      this.svc.create(this.model).subscribe(() => {
+        try { sessionStorage.setItem('ml_toast', 'Observation saved'); } catch {}
+        this.router.navigateByUrl('/');
+      });
     }
   }
 
   cancel() { this.router.navigateByUrl('/'); }
+
+  isValid(): boolean {
+    const cn = (this.model.commonName ?? '').trim();
+    const rn = (this.model.researcherName ?? '').trim();
+    return cn.length > 0 && rn.length > 0;
+  }
 }
