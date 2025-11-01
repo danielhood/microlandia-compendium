@@ -10,7 +10,7 @@ import { ObservationService } from '../services/observation.service';
   imports: [CommonModule, FormsModule],
   template: `
     <h2>{{ isEdit ? 'Edit Observation' : 'Add Observation' }}</h2>
-    <form (ngSubmit)="submit()" class="form-grid">
+    <form (ngSubmit)="submit()" class="form-grid" (document:click)="closePalette()">
       <div class="actions">
         <button type="submit">Save</button>
         <button type="button" (click)="cancel()">Cancel</button>
@@ -42,11 +42,23 @@ import { ObservationService } from '../services/observation.service';
         Field Notes
         <textarea rows="5" [(ngModel)]="model.fieldNotes" name="fieldNotes"></textarea>
       </label>
+      <label class="sketch-label">Sketch</label>
       <div class="sketch">
         <div class="sketch-header">
-          <strong>Sketch</strong>
           <div class="sketch-actions">
-            <button type="button" (click)="clearSketch()">Clear Sketch</button>
+            <div class="ctl palette" (click)="$event.stopPropagation()">
+              <button type="button" class="colour-swatch" (click)="togglePalette($event)" [style.background]="brushColor" aria-label="Choose colour"></button>
+              <div class="colour-grid" *ngIf="paletteOpen">
+                <button type="button" class="swatch-btn" *ngFor="let c of palette"
+                        [style.background]="c" (click)="pickColour(c)"></button>
+              </div>
+            </div>
+            <label class="ctl size">
+              <span>Size</span>
+              <input #sizeCtl type="range" min="1" max="24" [value]="brushSize" (input)="setSize(sizeCtl.valueAsNumber || +sizeCtl.value)" />
+            </label>
+            <button type="button" (click)="toggleEraser()" [class.active]="isEraser">Erase</button>
+            <button type="button" (click)="clearSketch()">Clear</button>
           </div>
         </div>
         <div class="sketch-canvas-wrap">
@@ -83,8 +95,15 @@ export class ObservationFormComponent implements OnInit, AfterViewInit {
   private drawing = false;
   private lastX = 0;
   private lastY = 0;
-  private strokeStyle = '#ffffff';
-  private lineWidth = 3;
+  brushColor = '#ffffff';
+  brushSize = 3;
+  isEraser = false;
+  paletteOpen = false;
+  palette: string[] = [
+    '#000000','#ffffff','#ef4444','#f59e0b','#fbbf24','#22c55e',
+    '#10b981','#06b6d4','#0ea5e9','#3b82f6','#6366f1','#8b5cf6',
+    '#a855f7','#ec4899','#f43f5e','#94a3b8'
+  ];
   submitted = false;
 
   ngOnInit(): void {
@@ -131,8 +150,7 @@ export class ObservationFormComponent implements OnInit, AfterViewInit {
     if (!this.ctx) return;
     this.ctx.lineJoin = 'round';
     this.ctx.lineCap = 'round';
-    this.ctx.strokeStyle = this.strokeStyle;
-    this.ctx.lineWidth = this.lineWidth;
+    this.applyBrush();
     if (prev) this.drawImageData(prev);
   }
 
@@ -185,6 +203,40 @@ export class ObservationFormComponent implements OnInit, AfterViewInit {
     if (!this.canvasRef) return;
     this.model.imageData = this.canvasRef.nativeElement.toDataURL('image/png');
   }
+
+  private applyBrush() {
+    if (!this.ctx) return;
+    this.ctx.lineWidth = this.brushSize;
+    this.ctx.strokeStyle = this.brushColor;
+    this.ctx.globalCompositeOperation = this.isEraser ? 'destination-out' : 'source-over';
+  }
+
+  setColor(color: string) {
+    this.brushColor = color;
+    this.isEraser = false;
+    this.applyBrush();
+  }
+
+  setSize(size: number) {
+    this.brushSize = Math.max(1, Math.min(48, size || 1));
+    this.applyBrush();
+  }
+
+  toggleEraser() {
+    this.isEraser = !this.isEraser;
+    this.applyBrush();
+  }
+
+  togglePalette(_ev: Event) {
+    this.paletteOpen = !this.paletteOpen;
+  }
+
+  pickColour(colour: string) {
+    this.setColor(colour);
+    this.paletteOpen = false;
+  }
+
+  closePalette() { this.paletteOpen = false; }
 
   submit() {
     // Ensure latest sketch is saved
