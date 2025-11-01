@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
   // Point this to your API base URL in dev
-  apiBaseUrl: 'http://localhost:8080/api'
+  apiBaseUrl: 'http://10.10.11.107:8080/api'
 };
 

@@ -10,7 +10,7 @@ import { ObservationService } from '../services/observation.service';
   imports: [CommonModule, FormsModule],
   template: `
     <h2>Add Observation</h2>
-    <form (ngSubmit)="submit()" style="display:grid; gap: 0.75rem; max-width: 720px;">
+    <form (ngSubmit)="submit()" class="form-grid">
       <label>
         Researcher Name
         <input [(ngModel)]="model.researcherName" name="researcherName" required />
@@ -56,4 +56,3 @@ export class ObservationFormComponent {
 
   cancel() { this.router.navigateByUrl('/'); }
 }
-

@@ -116,3 +116,48 @@ input, textarea, select {
 input::placeholder, textarea::placeholder { color: #9fb0ff; }
 
 .actions { display: flex; gap: 0.5rem; align-items: center; }
+
+/* Responsive forms */
+.search-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  max-width: 720px;
+}
+
+/* Responsive table wrapper */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+table { min-width: 700px; }
+
+/* Breakpoints */
+@media (min-width: 640px) {
+  .search-form { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 960px) {
+  .search-form { grid-template-columns: repeat(3, 1fr); }
+}
+@media (min-width: 768px) {
+  .form-grid { grid-template-columns: repeat(2, 1fr); }
+  .form-grid label { display: block; }
+  .form-grid .actions { grid-column: 1 / -1; }
+}
+
+/* Mobile adjustments */
+@media (max-width: 600px) {
+  header h1 { font-size: 16px; }
+  nav { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  nav a { margin-right: 0; flex: 1 1 auto; text-align: center; }
+  main { padding: 0.75rem; }
+  section { padding: 0.75rem; }
+  .actions { flex-wrap: wrap; }
+  .actions > * { flex: 1 1 45%; }
+}

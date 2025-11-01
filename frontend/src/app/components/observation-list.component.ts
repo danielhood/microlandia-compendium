@@ -13,7 +13,7 @@ import { Observation } from '../models/observation';
     <section>
       <h2>Observations</h2>
 
-      <form (ngSubmit)="search()" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1rem;">
+      <form (ngSubmit)="search()" class="search-form">
         <input [(ngModel)]="filters.researcherName" name="researcherName" placeholder="Researcher Name" />
         <input [(ngModel)]="filters.commonName" name="commonName" placeholder="Common Name" />
         <input [(ngModel)]="filters.scientificName" name="scientificName" placeholder="Scientific Name" />
@@ -26,30 +26,32 @@ import { Observation } from '../models/observation';
         </div>
       </form>
 
-      <table *ngIf="observations.length; else empty">
-        <thead>
-          <tr>
-            <th>Researcher</th>
-            <th>Common Name</th>
-            <th>Scientific Name</th>
-            <th>Habitat</th>
-            <th>Field Notes</th>
-            <th style="width: 150px;">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let o of observations">
-            <td>{{ o.researcherName }}</td>
-            <td>{{ o.commonName }}</td>
-            <td><i>{{ o.scientificName }}</i></td>
-            <td>{{ o.habitat }}</td>
-            <td>{{ o.fieldNotes }}</td>
-            <td class="actions">
-              <button (click)="remove(o)" title="Delete">Delete</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-scroll" *ngIf="observations.length; else empty">
+        <table>
+          <thead>
+            <tr>
+              <th>Researcher</th>
+              <th>Common Name</th>
+              <th>Scientific Name</th>
+              <th>Habitat</th>
+              <th>Field Notes</th>
+              <th style="width: 150px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let o of observations">
+              <td>{{ o.researcherName }}</td>
+              <td>{{ o.commonName }}</td>
+              <td><i>{{ o.scientificName }}</i></td>
+              <td>{{ o.habitat }}</td>
+              <td>{{ o.fieldNotes }}</td>
+              <td class="actions">
+                <button (click)="remove(o)" title="Delete">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <ng-template #empty>
         <p>No observations found.</p>
       </ng-template>
@@ -85,4 +87,3 @@ export class ObservationListComponent implements OnInit {
     }
   }
 }
-
