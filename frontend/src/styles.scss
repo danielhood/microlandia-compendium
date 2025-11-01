@@ -169,6 +169,33 @@ details.search-panel .search-form { margin-top: 0.75rem; }
   gap: 0.75rem;
   max-width: 720px;
 }
+/* Sketch area */
+.sketch {
+  grid-column: 1 / -1;
+  background: rgba(255,255,255,0.04);
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 0.5rem 0.5rem 0.75rem;
+}
+.sketch-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+.sketch-canvas-wrap {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #0a0c18;
+}
+.sketch-canvas-wrap canvas {
+  display: block;
+  width: 100%;
+  height: 260px;
+  touch-action: none;
+}
 
 /* Responsive table wrapper */
 .table-scroll {

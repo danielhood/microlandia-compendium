@@ -19,7 +19,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.options('*', cors());
-app.use(express.json());
+// Allow slightly larger JSON bodies to support small base64 sketches
+app.use(express.json({ limit: '2mb' }));
 app.use(morgan('dev'));
 
 // Health check
@@ -69,7 +70,8 @@ app.post('/api/observations', async (req, res) => {
       commonName: body.commonName,
       scientificName: body.scientificName,
       habitat: body.habitat,
-      fieldNotes: body.fieldNotes || ''
+      fieldNotes: body.fieldNotes || '',
+      imageData: body.imageData || ''
     });
     res.status(201).json(created);
   } catch (err) {

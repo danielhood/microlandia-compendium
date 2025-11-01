@@ -5,7 +5,7 @@ export interface Observation {
   scientificName: string;
   habitat: string;
   fieldNotes: string;
+  imageData?: string; // base64 PNG data URL
   createdAt?: string;
   updatedAt?: string;
 }
-
