@@ -8,6 +8,7 @@ import { environment } from '../../environments/environment';
 export class ObservationService {
   private http = inject(HttpClient);
   private baseUrl = environment.apiBaseUrl + '/observations';
+  private apiRoot = environment.apiBaseUrl;
   constructor() {
     // Debug: verify which API base URL the app is using at runtime
     console.log('[ObservationService] API base URL:', this.baseUrl);
@@ -37,5 +38,9 @@ export class ObservationService {
 
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  }
+
+  listResearchers(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.apiRoot}/researchers`);
   }
 }

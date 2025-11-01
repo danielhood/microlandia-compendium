@@ -58,6 +58,18 @@ app.get('/api/observations', async (req, res) => {
   }
 });
 
+// Distinct list of researchers (for filtering UI)
+app.get('/api/researchers', async (_req, res) => {
+  try {
+    const names = await Observation.distinct('researcherName', { researcherName: { $exists: true, $ne: '' } });
+    names.sort((a, b) => String(a).localeCompare(String(b), 'en', { sensitivity: 'base' }));
+    res.json(names);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch researchers' });
+  }
+});
+
 app.post('/api/observations', async (req, res) => {
   try {
     const body = req.body || {};

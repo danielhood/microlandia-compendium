@@ -18,7 +18,10 @@ import { Observation } from '../models/observation';
       <details class="search-panel">
         <summary>Search</summary>
         <form (ngSubmit)="search()" class="search-form">
-          <input [(ngModel)]="filters.researcherName" name="researcherName" placeholder="Researcher Name" />
+          <select [(ngModel)]="filters.researcherName" name="researcherName">
+            <option value="">All Researchers</option>
+            <option *ngFor="let r of researchers" [value]="r">{{ r }}</option>
+          </select>
           <input [(ngModel)]="filters.commonName" name="commonName" placeholder="Common Name" />
           <input [(ngModel)]="filters.scientificName" name="scientificName" placeholder="Scientific Name" />
           <input [(ngModel)]="filters.habitat" name="habitat" placeholder="Habitat" />
@@ -60,6 +63,7 @@ export class ObservationListComponent implements OnInit {
   observations: Observation[] = [];
   filters: any = { researcherName: '', commonName: '', scientificName: '', habitat: '', q: '' };
   toast: string = '';
+  researchers: string[] = [];
 
   ngOnInit(): void {
     try {
@@ -71,6 +75,7 @@ export class ObservationListComponent implements OnInit {
       }
     } catch {}
     this.load();
+    this.svc.listResearchers().subscribe(list => this.researchers = list || []);
   }
 
   load() {
