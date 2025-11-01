@@ -12,8 +12,8 @@ import { ObservationService } from '../services/observation.service';
     <h2>{{ isEdit ? 'Edit Observation' : 'Add Observation' }}</h2>
     <form (ngSubmit)="submit()" class="form-grid" (document:click)="closePalette()">
       <div class="actions">
-        <button type="submit">Save</button>
         <button type="button" (click)="cancel()">Cancel</button>
+        <button type="submit">Save</button>
       </div>
       <div class="form-error" *ngIf="submitted && !isValid()">
         Please fill the required fields: Researcher Name and Common Name.
@@ -47,18 +47,30 @@ import { ObservationService } from '../services/observation.service';
         <div class="sketch-header">
           <div class="sketch-actions">
             <div class="ctl palette" (click)="$event.stopPropagation()">
-              <button type="button" class="colour-swatch" (click)="togglePalette($event)" [style.background]="brushColor" aria-label="Choose colour"></button>
+              <button type="button" class="colour-swatch" (click)="togglePalette($event)" [class.eraser]="isEraser" [style.background]="isEraser ? 'transparent' : brushColor" aria-label="Choose colour">
+                <svg *ngIf="isEraser" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                  <path fill="currentColor" d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+              </button>
               <div class="colour-grid" *ngIf="paletteOpen">
                 <button type="button" class="swatch-btn" *ngFor="let c of palette"
                         [style.background]="c" (click)="pickColour(c)"></button>
+                <div class="palette-actions">
+                  <button type="button" (click)="pickEraser()" [class.active]="isEraser">Erase</button>
+                </div>
               </div>
             </div>
             <label class="ctl size">
               <span>Size</span>
               <input #sizeCtl type="range" min="1" max="24" [value]="brushSize" (input)="setSize(sizeCtl.valueAsNumber || +sizeCtl.value)" />
             </label>
-            <button type="button" (click)="toggleEraser()" [class.active]="isEraser">Erase</button>
-            <button type="button" (click)="clearSketch()">Clear</button>
+            <input #cameraInput type="file" accept="image/*" capture="environment" (change)="onCapture(cameraInput.files)" style="display:none" />
+            <button type="button" class="icon-btn" (click)="cameraInput.click()" aria-label="Camera">
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+                <path fill="currentColor" d="M9.5 4l1.5 2h4l1.5-2H20a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.5zm2.5 14a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0-2.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/>
+              </svg>
+            </button>
+            <button type="button" class="clear-btn" (click)="clearSketch()">Clear</button>
           </div>
         </div>
         <div class="sketch-canvas-wrap">
@@ -158,8 +170,13 @@ export class ObservationFormComponent implements OnInit, AfterViewInit {
     const img = new Image();
     img.onload = () => {
       if (!this.ctx || !this.canvasRef) return;
-      this.ctx.clearRect(0, 0, this.canvasRef.nativeElement.width, this.canvasRef.nativeElement.height);
-      this.ctx.drawImage(img, 0, 0, this.canvasRef.nativeElement.width, this.canvasRef.nativeElement.height);
+      const { nativeElement: canvas } = this.canvasRef;
+      // Ensure captured image renders regardless of current brush/composite (e.g., eraser)
+      this.ctx.save();
+      this.ctx.globalCompositeOperation = 'source-over';
+      this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+      this.ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      this.ctx.restore();
     };
     img.src = dataUrl;
   }
@@ -227,6 +244,12 @@ export class ObservationFormComponent implements OnInit, AfterViewInit {
     this.applyBrush();
   }
 
+  pickEraser() {
+    this.isEraser = !this.isEraser;
+    this.applyBrush();
+    this.paletteOpen = false;
+  }
+
   togglePalette(_ev: Event) {
     this.paletteOpen = !this.paletteOpen;
   }
@@ -237,6 +260,20 @@ export class ObservationFormComponent implements OnInit, AfterViewInit {
   }
 
   closePalette() { this.paletteOpen = false; }
+
+  onCapture(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = String(reader.result || '');
+      // Draw captured image onto canvas and store
+      this.drawImageData(dataUrl);
+      // Snapshot after next tick to ensure draw completed
+      setTimeout(() => this.snapToModel(), 0);
+    };
+    reader.readAsDataURL(file);
+  }
 
   submit() {
     // Ensure latest sketch is saved
