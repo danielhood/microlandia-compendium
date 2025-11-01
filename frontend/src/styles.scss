@@ -34,6 +34,61 @@ header {
   border-bottom: 6px solid #0a0c18;
   box-shadow: 0 6px 20px rgba(0,0,0,0.35);
 }
+/* Microorganism background swarm */
+header .micro-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+header .micro {
+  position: absolute;
+  display: block;
+  width: 52px;
+  height: 36px;
+  border-radius: 45% 55% 60% 40% / 55% 45% 55% 45%;
+  background: radial-gradient(40% 40% at 40% 40%, rgba(255,255,255,0.35) 0, rgba(255,255,255,0.1) 30%, transparent 65%),
+              radial-gradient(70% 70% at 70% 60%, currentColor 0, transparent 70%);
+  color: rgba(94,234,212,0.35);
+  filter: blur(0.2px) drop-shadow(0 0 6px rgba(255,255,255,0.15));
+  animation: micro-drift 18s ease-in-out infinite, micro-rotate 22s linear infinite;
+  opacity: 0.65;
+}
+header .micro::after {
+  content: '';
+  position: absolute;
+  width: 8px; height: 8px;
+  top: 12px; left: 14px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.65);
+  filter: blur(0.5px);
+}
+header .micro.m1 { left: 6%;  top: 20%; color: rgba(167,139,250,0.35); animation-duration: 24s, 30s; animation-delay: 0s, -3s; transform: translateZ(0); }
+header .micro.m2 { left: 22%; top: 60%; color: rgba(94,234,212,0.35); animation-duration: 28s, 26s; animation-delay: -2s, -6s; }
+header .micro.m3 { left: 48%; top: 35%; color: rgba(245,158,11,0.35); animation-duration: 26s, 24s; animation-delay: -4s, -1s; }
+header .micro.m4 { left: 70%; top: 15%; color: rgba(59,130,246,0.35); animation-duration: 30s, 32s; animation-delay: -8s, -4s; }
+header .micro.m5 { left: 88%; top: 55%; color: rgba(236,72,153,0.35); animation-duration: 22s, 28s; animation-delay: -5s, -2s; }
+header .micro.m6 { left: 12%; top: 75%; color: rgba(16,185,129,0.35); animation-duration: 27s, 25s; animation-delay: -7s, -3s; }
+header .micro.m7 { left: 35%; top: 10%; color: rgba(234,179,8,0.35);  animation-duration: 29s, 31s; animation-delay: -1s, -5s; }
+header .micro.m8 { left: 55%; top: 70%; color: rgba(99,102,241,0.35);  animation-duration: 23s, 29s; animation-delay: -6s, -7s; }
+header .micro.m9 { left: 78%; top: 40%; color: rgba(59,130,246,0.3);   animation-duration: 32s, 34s; animation-delay: -3s, -9s; }
+header .micro.m10{ left: 92%; top: 22%; color: rgba(236,72,153,0.3);  animation-duration: 21s, 27s; animation-delay: -10s, -8s; }
+
+@keyframes micro-drift {
+  0%   { transform: translate(0, 0)   scale(1); }
+  20%  { transform: translate(12px, -8px) scale(1.05); }
+  40%  { transform: translate(-8px, 10px) scale(0.98); }
+  60%  { transform: translate(16px, 6px) scale(1.06); }
+  80%  { transform: translate(-10px, -6px) scale(1.02); }
+  100% { transform: translate(0, 0)   scale(1); }
+}
+
+@keyframes micro-rotate {
+  0%   { rotate: 0deg; }
+  50%  { rotate: 180deg; }
+  100% { rotate: 360deg; }
+}
 header::before,
 header::after {
   content: "";
@@ -53,6 +108,9 @@ header h1 {
   letter-spacing: 1px;
   text-shadow: 0 2px 0 rgba(0,0,0,0.2);
 }
+
+/* Ensure content appears above micro background */
+header h1, header nav { position: relative; z-index: 1; }
 
 nav a {
   display: inline-block;
