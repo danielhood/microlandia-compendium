@@ -112,6 +112,29 @@ header h1 {
 /* Ensure content appears above micro background */
 header h1, header nav { position: relative; z-index: 1; }
 
+/* QR overlay */
+.qr-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.qr-modal {
+  background: var(--bg-accent);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.45);
+}
+.qr-modal img { display: block; width: 320px; height: 320px; border-radius: 8px; }
+.qr-generating { width: 320px; height: 320px; display:flex; align-items:center; justify-content:center; color: var(--muted); border: 1px dashed var(--border); border-radius: 8px; }
+.qr-caption { color: var(--muted); margin-top: 0.5rem; max-width: 75ch; }
+.qr-modal .close-btn { margin-top: 0.75rem; }
+
 nav a {
   display: inline-block;
   color: #0b0e1a;
