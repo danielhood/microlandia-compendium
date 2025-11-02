@@ -5,6 +5,7 @@ const state = {
   researchers: [],
   currentIndex: -1
 };
+const config = { shareUrl: '', shareQrDataUrl: '' };
 
 const els = {
   tbody: document.getElementById('tbody'),
@@ -28,7 +29,22 @@ const els = {
   dNotes: document.getElementById('detail-notes'),
   dPrev: document.getElementById('detail-prev'),
   dNext: document.getElementById('detail-next'),
+  shareLink: document.getElementById('share-link'),
+  qrOverlay: document.getElementById('qr-overlay'),
+  qrClose: document.getElementById('qr-close'),
+  qrImage: document.getElementById('qr-image'),
 };
+
+async function loadConfig() {
+  try {
+    const res = await fetch('./config.json', { cache: 'no-store' });
+    if (res.ok) {
+      const c = await res.json();
+      config.shareUrl = c.shareUrl || '';
+      config.shareQrDataUrl = c.shareQrDataUrl || '';
+    }
+  } catch {}
+}
 
 async function loadData() {
   try {
@@ -130,6 +146,16 @@ function attachEvents() {
   els.detailClose.addEventListener('click', () => closeDetail());
   els.dPrev.addEventListener('click', (e) => { e.stopPropagation(); showPrev(); });
   els.dNext.addEventListener('click', (e) => { e.stopPropagation(); showNext(); });
+
+  // Share (QR)
+  if (els.shareLink) {
+    els.shareLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      openQr();
+    });
+  }
+  if (els.qrOverlay) els.qrOverlay.addEventListener('click', () => closeQr());
+  if (els.qrClose) els.qrClose.addEventListener('click', (e) => { e.stopPropagation(); closeQr(); });
 }
 
 function openDetailByIndex(index){
@@ -163,5 +189,50 @@ function showNext(){
   if (state.currentIndex < state.filtered.length - 1) openDetailByIndex(state.currentIndex + 1);
 }
 
+async function openQr(){
+  // Prefer explicit QR data URL from config
+  if (config.shareQrDataUrl) {
+    els.qrImage.src = config.shareQrDataUrl;
+    els.qrOverlay.hidden = false;
+    return;
+  }
+  // Otherwise, generate locally via bundled QR library (vendor/qrcode.min.js)
+  const QR = (window && window.QRCode) ? window.QRCode : null;
+  if (config.shareUrl && QR) {
+    try {
+      if (typeof QR.toDataURL === 'function') {
+        // Some libraries expose a toDataURL utility
+        const dataUrl = await QR.toDataURL(config.shareUrl, { width: 320, margin: 1 });
+        els.qrImage.src = dataUrl;
+      } else if (typeof QR === 'function') {
+        // davidshimjs QRCode API: render to a temp container and read <img>.src
+        const tmp = document.createElement('div');
+        tmp.style.position = 'fixed';
+        tmp.style.left = '-9999px';
+        document.body.appendChild(tmp);
+        const q = new QR(tmp, { text: config.shareUrl, width: 320, height: 320, correctLevel: QR.CorrectLevel && QR.CorrectLevel.M ? QR.CorrectLevel.M : 1 });
+        // It renders an <img> tag by default with data URL
+        const img = tmp.querySelector('img');
+        if (img && img.src) {
+          els.qrImage.src = img.src;
+        } else {
+          // Fallback: try canvas
+          const canvas = tmp.querySelector('canvas');
+          els.qrImage.src = canvas ? canvas.toDataURL('image/png') : '';
+        }
+        document.body.removeChild(tmp);
+      }
+    } catch (e) {
+      console.error('QR generation failed', e);
+      els.qrImage.removeAttribute('src');
+    }
+  } else {
+    els.qrImage.removeAttribute('src');
+  }
+  els.qrOverlay.hidden = false;
+}
+function closeQr(){ els.qrOverlay.hidden = true; }
+
 attachEvents();
-loadData();
+// Load config first (best-effort), then data
+loadConfig().finally(() => loadData());
