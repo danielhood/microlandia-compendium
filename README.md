@@ -83,3 +83,30 @@ Notes
 - The frontend uses Angular standalone components and the HttpClient to call the API.
 - The API uses Mongoose timestamps; each document has `createdAt` and `updatedAt`.
 - You can later add auth, file uploads (e.g., photos), geolocation, and richer filtering/pagination.
+
+
+Offline Viewer (frontend-offline)
+---------------------------------
+The `frontend-offline/` site lets you browse a read‑only copy of the compendium without connecting to the API. It consumes the export the main app produces.
+
+Export contents
+- `compendium.csv` — tabular dataset
+- `compendium.json` — full dataset with relative `imagePath` entries
+- `images/` — PNG files referenced by `imagePath` (e.g., `images/<id>.png`)
+
+How to use the offline viewer
+1. In the main app, click the “Export” link in the header to download a ZIP.
+2. Extract the ZIP into a folder; you should see `compendium.json`, `compendium.csv`, and an `images/` subfolder.
+3. Copy the files from `frontend-offline/` (index.html, app.js, styles.css) into that same folder so they sit alongside `compendium.json` and `images/`.
+4. Serve the folder over HTTP (recommended):
+   - `npx http-server .`
+   - Open the printed URL (for example `http://127.0.0.1:8080`).
+
+Features (offline)
+- Fast client‑side search and researcher dropdown.
+- Tap any row to see a detail view with the larger image and full fields.
+- Strictly read‑only: there is no Add/Edit/Delete and no network requests.
+
+Notes
+- Most browsers block `fetch` from `file://`; using a simple HTTP server avoids this.
+- You can host the offline bundle (index.html + app.js + styles.css) anywhere static files are served, together with the exported `compendium.json` and `images/`.

@@ -17,11 +17,17 @@ import { Observation } from '../models/observation';
 
       <details class="search-panel">
         <summary>Search</summary>
-        <form class="search-form">
-          <select [(ngModel)]="filters.researcherName" name="researcherName" (ngModelChange)="onFilterChange()">
-            <option value="">All Researchers</option>
-            <option *ngFor="let r of researchers" [value]="r">{{ r }}</option>
-          </select>
+        <form class="search-form" (document:click)="closeResearcherMenu()">
+          <div class="select" (click)="$event.stopPropagation()">
+            <button type="button" (click)="toggleResearcherMenu()">
+              <span>{{ filters.researcherName || 'All Researchers' }}</span>
+              <span class="caret">▾</span>
+            </button>
+            <div class="select-menu" *ngIf="researcherMenuOpen">
+              <div class="option" (click)="pickResearcher('')">All Researchers</div>
+              <div class="option" *ngFor="let r of researchers" (click)="pickResearcher(r)">{{ r }}</div>
+            </div>
+          </div>
           <input [(ngModel)]="filters.commonName" name="commonName" placeholder="Common Name" (ngModelChange)="onFilterChange()" />
           <input [(ngModel)]="filters.scientificName" name="scientificName" placeholder="Scientific Name" (ngModelChange)="onFilterChange()" />
           <input [(ngModel)]="filters.habitat" name="habitat" placeholder="Habitat" (ngModelChange)="onFilterChange()" />
@@ -67,6 +73,7 @@ export class ObservationListComponent implements OnInit {
   filters: any = { researcherName: '', commonName: '', scientificName: '', habitat: '', q: '' };
   toast: string = '';
   researchers: string[] = [];
+  researcherMenuOpen = false;
   private filterDebounce: any;
 
   ngOnInit(): void {
@@ -93,6 +100,14 @@ export class ObservationListComponent implements OnInit {
   onFilterChange() {
     clearTimeout(this.filterDebounce);
     this.filterDebounce = setTimeout(() => this.load(), 250);
+  }
+
+  toggleResearcherMenu() { this.researcherMenuOpen = !this.researcherMenuOpen; }
+  closeResearcherMenu() { this.researcherMenuOpen = false; }
+  pickResearcher(val: string) {
+    this.filters.researcherName = val;
+    this.researcherMenuOpen = false;
+    this.onFilterChange();
   }
 
   reset() {

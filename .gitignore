@@ -45,3 +45,6 @@ Desktop.ini
 # Docker (local overrides)
 docker-compose.override.yml
 
+# Offline export artifacts
+frontend-offline/compendium.json
+frontend-offline/images/

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Microlandia Compendium (Offline)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <header>
+      <div class="micro-bg" aria-hidden="true">
+        <span class="micro m1"></span>
+        <span class="micro m2"></span>
+        <span class="micro m3"></span>
+        <span class="micro m4"></span>
+        <span class="micro m5"></span>
+        <span class="micro m6"></span>
+        <span class="micro m7"></span>
+        <span class="micro m8"></span>
+        <span class="micro m9"></span>
+        <span class="micro m10"></span>
+      </div>
+      <h1>Microlandia Compendium</h1>
+      <nav>
+        <a href="#" aria-current="page">Observations</a>
+      </nav>
+    </header>
+    <main>
+      <section>
+        <details class="search-panel">
+          <summary>Search</summary>
+          <form class="search-form" id="search-form">
+            <div class="select" id="researcher-select">
+              <button type="button" id="researcher-toggle">
+                <span id="researcher-label">All Researchers</span>
+                <span class="caret">▾</span>
+              </button>
+              <div class="select-menu" id="researcher-menu" hidden>
+                <!-- options injected by app.js -->
+              </div>
+            </div>
+            <input id="filter-common" name="commonName" placeholder="Common Name" />
+            <input id="filter-scientific" name="scientificName" placeholder="Scientific Name" />
+            <input id="filter-habitat" name="habitat" placeholder="Habitat" />
+            <input id="filter-q" name="q" placeholder="Search notes" />
+            <div class="actions">
+              <button type="button" id="reset-btn">Reset</button>
+            </div>
+          </form>
+        </details>
+
+        <div class="table-scroll">
+          <table id="table">
+            <thead>
+              <tr>
+                <th>Image</th>
+                <th>Common Name</th>
+                <th>Scientific Name</th>
+                <th>Researcher</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+        <template id="empty-template"><p>No observations found.</p></template>
+      </section>
+
+      <div class="detail-overlay" id="detail-overlay" hidden>
+        <div class="detail-card">
+          <button class="close-btn" id="detail-close" aria-label="Close">Close</button>
+          <div class="detail-content">
+            <img id="detail-image" alt="observation image" />
+            <div class="detail-text">
+              <h3 id="detail-common"></h3>
+              <div><strong>Scientific:</strong> <span id="detail-scientific"></span></div>
+              <div><strong>Researcher:</strong> <span id="detail-researcher"></span></div>
+              <div><strong>Habitat:</strong> <span id="detail-habitat"></span></div>
+              <div><strong>Field Notes:</strong></div>
+              <p id="detail-notes"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+  </html>
