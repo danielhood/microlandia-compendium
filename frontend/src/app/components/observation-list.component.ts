@@ -36,6 +36,7 @@ import { Observation } from '../models/observation';
         <table>
           <thead>
             <tr>
+              <th>Image</th>
               <th>Common Name</th>
               <th>Scientific Name</th>
               <th>Researcher</th>
@@ -43,6 +44,9 @@ import { Observation } from '../models/observation';
           </thead>
           <tbody>
             <tr class="clickable-row" *ngFor="let o of observations" (click)="edit(o)">
+              <td>
+                <img *ngIf="o.imageData" [src]="o.imageData" alt="thumb" class="thumb-img" />
+              </td>
               <td>{{ o.commonName }}</td>
               <td><i>{{ o.scientificName }}</i></td>
               <td>{{ o.researcherName }}</td>

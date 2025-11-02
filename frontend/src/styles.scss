@@ -183,6 +183,7 @@ thead th { color: var(--muted); font-weight: 900; font-size: 0.9rem; }
 tbody tr { background: rgba(255,255,255,0.05); border: 1px solid var(--border); }
 tbody tr:hover { background: rgba(255,255,255,0.08); }
 tbody tr.clickable-row { cursor: pointer; }
+img.thumb-img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); background: #0a0c18; }
 th, td { border: 0; padding: 0.6rem 0.75rem; text-align: left; }
 tbody td:first-child, thead th:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
 tbody td:last-child, thead th:last-child { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
