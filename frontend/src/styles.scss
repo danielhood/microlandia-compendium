@@ -111,6 +111,7 @@ header h1 {
 
 /* Ensure content appears above micro background */
 header h1, header nav { position: relative; z-index: 1; }
+header nav a.disabled { opacity: 0.6; pointer-events: none; }
 
 /* QR overlay */
 .qr-overlay {

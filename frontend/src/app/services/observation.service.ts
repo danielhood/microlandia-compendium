@@ -43,4 +43,8 @@ export class ObservationService {
   listResearchers(): Observable<string[]> {
     return this.http.get<string[]>(`${this.apiRoot}/researchers`);
   }
+
+  listAll(): Observable<Observation[]> {
+    return this.http.get<Observation[]>(this.baseUrl);
+  }
 }
