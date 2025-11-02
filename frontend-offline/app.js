@@ -2,7 +2,8 @@ const state = {
   all: [],
   filtered: [],
   filters: { researcherName: '', commonName: '', scientificName: '', habitat: '', q: '' },
-  researchers: []
+  researchers: [],
+  currentIndex: -1
 };
 
 const els = {
@@ -25,6 +26,8 @@ const els = {
   dResearcher: document.getElementById('detail-researcher'),
   dHabitat: document.getElementById('detail-habitat'),
   dNotes: document.getElementById('detail-notes'),
+  dPrev: document.getElementById('detail-prev'),
+  dNext: document.getElementById('detail-next'),
 };
 
 async function loadData() {
@@ -120,14 +123,19 @@ function attachEvents() {
     const tr = e.target.closest('tr');
     if (!tr) return;
     const id = tr.getAttribute('data-id');
-    const item = state.all.find(o => String(o._id) === String(id));
-    if (item) openDetail(item);
+    const idx = state.filtered.findIndex(o => String(o._id) === String(id));
+    if (idx !== -1) openDetailByIndex(idx);
   });
   els.detailOverlay.addEventListener('click', () => closeDetail());
   els.detailClose.addEventListener('click', () => closeDetail());
+  els.dPrev.addEventListener('click', (e) => { e.stopPropagation(); showPrev(); });
+  els.dNext.addEventListener('click', (e) => { e.stopPropagation(); showNext(); });
 }
 
-function openDetail(o){
+function openDetailByIndex(index){
+  state.currentIndex = index;
+  const o = state.filtered[index];
+  if (!o) return;
   els.dCommon.textContent = o.commonName || '';
   els.dScientific.textContent = o.scientificName || '';
   els.dResearcher.textContent = o.researcherName || '';
@@ -140,8 +148,20 @@ function openDetail(o){
     els.dImg.hidden = true;
   }
   els.detailOverlay.hidden = false;
+  updateNavButtons();
 }
 function closeDetail(){ els.detailOverlay.hidden = true; }
+
+function updateNavButtons(){
+  els.dPrev.disabled = state.currentIndex <= 0;
+  els.dNext.disabled = state.currentIndex >= state.filtered.length - 1;
+}
+function showPrev(){
+  if (state.currentIndex > 0) openDetailByIndex(state.currentIndex - 1);
+}
+function showNext(){
+  if (state.currentIndex < state.filtered.length - 1) openDetailByIndex(state.currentIndex + 1);
+}
 
 attachEvents();
 loadData();

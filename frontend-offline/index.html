@@ -70,7 +70,6 @@
 
       <div class="detail-overlay" id="detail-overlay" hidden>
         <div class="detail-card">
-          <button class="close-btn" id="detail-close" aria-label="Close">Close</button>
           <div class="detail-content">
             <img id="detail-image" alt="observation image" />
             <div class="detail-text">
@@ -80,6 +79,15 @@
               <div><strong>Habitat:</strong> <span id="detail-habitat"></span></div>
               <div><strong>Field Notes:</strong></div>
               <p id="detail-notes"></p>
+            </div>
+          </div>
+          <div class="detail-actions">
+            <div class="left">
+              <button type="button" id="detail-prev">Prev</button>
+              <button type="button" id="detail-next">Next</button>
+            </div>
+            <div class="right">
+              <button class="close-btn" id="detail-close" aria-label="Close">Close</button>
             </div>
           </div>
         </div>
