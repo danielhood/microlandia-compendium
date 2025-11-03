@@ -1,30 +1,54 @@
-Microlandia Compendium – Field Microorganism Observations
-========================================================
+Microlandia Compendium — Field Microorganism Observations
+=======================================================
 
 Overview
 --------
-- Angular frontend (standalone, Angular 17) for searching and adding observations
+- Angular 17 frontend (standalone APIs) for browsing and managing observations
 - Node/Express REST API with MongoDB (Mongoose)
-- Docker Compose to run API + MongoDB
-- Frontend can be hosted as static files (e.g., S3/CloudFront)
+- Docker Compose for API + MongoDB
+- Optional static hosting for the frontend (e.g., S3 + CloudFront)
+- Offline, read‑only viewer in `frontend-offline/` that works with exported data
+
+Frontend highlights
+-------------------
+- Responsive UI with playful “microbe Pokédex” theme and animated header background
+- Collapsible Search with live filtering (no submit button)
+- Researcher filter via custom dark dropdown (consistent on mobile/desktop)
+- Tap a row to edit; Add screen available from header
+- Canvas sketch per observation with:
+  - 16‑colour palette (Canadian “Colour”), size slider, Erase, Clear
+  - Camera capture (handheld) to insert a photo and annotate it
+- Thumbnails shown in the grid for entries with images/sketches
+- Share overlay with QR code (configurable via environment)
+- Export entire compendium as ZIP (CSV + JSON + images/)
+
+API highlights
+--------------
+- CORS (including preflight) enabled
+- Filtering by multiple fields with case‑insensitive partial matches
+- Distinct researchers endpoint to populate the dropdown
+- Mongoose timestamps on documents
 
 Data model
 ----------
 - researcherName (string, required)
 - commonName (string, required)
-- scientificName (string, required)
-- habitat (string, required)
+- scientificName (string, optional)
+- habitat (string, optional)
 - fieldNotes (string, optional)
+- imageData (string, optional, base64 PNG data URL)
+- createdAt, updatedAt (timestamps)
 
 Project structure
 -----------------
-- `frontend/` – Angular app
-- `api/` – Express/Mongoose API
-- `docker-compose.yml` – API + MongoDB stack
+- `frontend/` — Angular app
+- `api/` — Express/Mongoose API
+- `frontend-offline/` — Static offline viewer (no API)
+- `docker-compose.yml` — API + MongoDB stack
 
 Quick start
 -----------
-Prereqs: Docker Desktop (or Engine) for running the stack; Node 20+ for local builds of the frontend if desired.
+Prereqs: Docker Desktop (or Engine) to run API + DB; Node 20+ for frontend.
 
 1) Run API + MongoDB in Docker
 
@@ -32,20 +56,21 @@ Prereqs: Docker Desktop (or Engine) for running the stack; Node 20+ for local bu
 docker compose up --build
 ```
 
-This exposes:
+Exposes:
 - API: `http://localhost:8080/api`
 - MongoDB: `mongodb://localhost:27017/microlandia`
 
-Health check: `GET http://localhost:8080/api/health`
+Health: `GET http://localhost:8080/api/health`
 
-2) Configure frontend API URL
+2) Configure frontend environments
 
-Edit `frontend/src/environments/environment.ts` if needed:
+Edit `frontend/src/environments/environment.ts` (and `.prod.ts`) as needed:
 
 ```
 export const environment = {
   production: false,
-  apiBaseUrl: 'http://localhost:8080/api'
+  apiBaseUrl: 'http://localhost:8080/api',
+  shareQrUrl: 'http://localhost:4200/'
 };
 ```
 
@@ -57,56 +82,73 @@ npm install
 npm run build
 ```
 
-The static site will be in `frontend/dist/microlandia-frontend/`.
+Artifacts: `frontend/dist/microlandia-frontend/`.
 
 4) Host the frontend
-- Simple local test: `npx http-server dist/microlandia-frontend` (or any static server)
-- Production: Upload files in `dist/microlandia-frontend/` to an S3 bucket (optionally fronted by CloudFront). Ensure CORS allows requests to the API domain.
+- Local: `npx http-server dist/microlandia-frontend`
+- Production: upload to S3 (optionally behind CloudFront). Set `apiBaseUrl` to the API domain, and `shareQrUrl` to your app URL.
+
+Export (CSV + JSON + Images)
+----------------------------
+- Use the “Export” link in the header
+- ZIP includes:
+  - `compendium.csv` — `_id, researcherName, commonName, scientificName, habitat, fieldNotes, createdAt, updatedAt, imagePath`
+  - `compendium.json` — array with the same fields (no `imageData`), includes relative `imagePath`
+  - `images/` — `images/<id>.png` for items with images
+
+Offline viewer (`frontend-offline/`)
+-----------------------------------
+Browse the exported compendium without an API.
+
+What you need
+- `compendium.json` and `images/` from the export ZIP
+- The offline site files: `frontend-offline/index.html`, `app.js`, `styles.css`
+- Optional: `frontend-offline/config.json` with a `shareUrl` for the QR overlay
+
+Usage
+1. Extract the export ZIP into a folder
+2. Copy the contents of `frontend-offline/` into that same folder (so `index.html`, `app.js`, `styles.css` sit alongside `compendium.json` and `images/`)
+3. (Optional) Create `config.json`:
+
+```
+{
+  "shareUrl": "https://your.app.url/"
+}
+```
+
+4. Serve the folder over HTTP (recommended):
+
+```
+npx http-server .
+```
+
+Notes
+- Offline is read‑only: no Add/Edit/Delete; tap rows to view details
+- Uses a vendored browser QR library and local `config.json` (no network required to generate QR)
+- `.gitignore` excludes `frontend-offline/compendium.json` and `frontend-offline/images/`
 
 REST API
 --------
 Base URL: `/api`
 
-- `GET /api/observations` – list/search. Query params: `researcherName`, `commonName`, `scientificName`, `habitat`, `q` (searches notes/common/scientific name). Returns array.
-- `POST /api/observations` – create. Body: `{ researcherName, commonName, scientificName, habitat, fieldNotes }`
-- `GET /api/observations/:id` – fetch by id
-- `PUT /api/observations/:id` – update by id (same fields as create)
-- `DELETE /api/observations/:id` – delete by id
+- `GET /api/observations` — list/search. Query: `researcherName`, `commonName`, `scientificName`, `habitat`, `q`
+- `POST /api/observations` — create. Body: `{ researcherName, commonName, scientificName?, habitat?, fieldNotes?, imageData? }`
+- `GET /api/observations/:id` — fetch by id
+- `PUT /api/observations/:id` — update by id
+- `DELETE /api/observations/:id` — delete by id
+- `GET /api/researchers` — distinct list of non‑empty researcher names
 
-Environment variables (API)
----------------------------
-- `MONGODB_URI` (default `mongodb://localhost:27017/microlandia`, compose sets to `mongodb://mongo:27017/microlandia`)
+API environment variables
+-------------------------
+- `MONGODB_URI` (default `mongodb://localhost:27017/microlandia`, compose sets `mongodb://mongo:27017/microlandia`)
 - `PORT` (default `8080`)
 
-Notes
------
-- The frontend uses Angular standalone components and the HttpClient to call the API.
-- The API uses Mongoose timestamps; each document has `createdAt` and `updatedAt`.
-- You can later add auth, file uploads (e.g., photos), geolocation, and richer filtering/pagination.
+Deployment notes (ECS + Compose)
+--------------------------------
+- API can be deployed via Docker ECS context and a compose override; MongoDB in ECS requires persistence (EFS) or use a managed service (Atlas/DocumentDB)
+- Frontend recommended on S3 + CloudFront
 
+License
+-------
+This repository does not include a license file. Consult the repository owner for licensing terms.
 
-Offline Viewer (frontend-offline)
----------------------------------
-The `frontend-offline/` site lets you browse a read‑only copy of the compendium without connecting to the API. It consumes the export the main app produces.
-
-Export contents
-- `compendium.csv` — tabular dataset
-- `compendium.json` — full dataset with relative `imagePath` entries
-- `images/` — PNG files referenced by `imagePath` (e.g., `images/<id>.png`)
-
-How to use the offline viewer
-1. In the main app, click the “Export” link in the header to download a ZIP.
-2. Extract the ZIP into a folder; you should see `compendium.json`, `compendium.csv`, and an `images/` subfolder.
-3. Copy the files from `frontend-offline/` (index.html, app.js, styles.css) into that same folder so they sit alongside `compendium.json` and `images/`.
-4. Serve the folder over HTTP (recommended):
-   - `npx http-server .`
-   - Open the printed URL (for example `http://127.0.0.1:8080`).
-
-Features (offline)
-- Fast client‑side search and researcher dropdown.
-- Tap any row to see a detail view with the larger image and full fields.
-- Strictly read‑only: there is no Add/Edit/Delete and no network requests.
-
-Notes
-- Most browsers block `fetch` from `file://`; using a simple HTTP server avoids this.
-- You can host the offline bundle (index.html + app.js + styles.css) anywhere static files are served, together with the exported `compendium.json` and `images/`.
