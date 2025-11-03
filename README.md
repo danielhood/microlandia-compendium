@@ -150,5 +150,6 @@ Deployment notes (ECS + Compose)
 
 License
 -------
-This repository does not include a license file. Consult the repository owner for licensing terms.
+MIT License. See the `LICENSE` file for full text.
+
 
